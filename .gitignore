@@ -1,0 +1,34 @@
+﻿# Environments
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Model artifacts (can be large; regenerate via scripts/train_xgboost.py)
+models_store/*.pkl
+models_store/*.joblib
+models_store/*.bin
+!models_store/.gitkeep
+
+# Data exports (may contain real user data â€” don't commit)
+data/raw/
+data/processed/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Runtime logs (uvicorn/training stdout+stderr) - regenerate on every run,
+# not project artifacts.
+*.log
+

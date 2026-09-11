@@ -1,0 +1,23 @@
+﻿# Web API
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+python-dotenv>=1.0
+
+# Database
+mysql-connector-python>=8.3
+
+# Machine learning
+xgboost>=2.0
+scikit-learn>=1.4
+pandas>=2.2
+numpy>=1.26
+joblib>=1.3
+
+# NLP / semantic similarity
+sentence-transformers>=2.6
+
+# Testing
+pytest>=8.0
+httpx>=0.27
+
