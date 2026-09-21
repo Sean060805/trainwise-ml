@@ -174,8 +174,9 @@ def write_report(rows, n_cases, top1_hits, top3_hits, mrr, avg_expected_score, a
     lines.append(
         f"Average similarity scores here (expected: {avg_expected_score:.3f}, actual "
         f"top-1: {avg_top1_score:.3f}) are well below the paper's Table 11 target of "
-        f"≥{SIMILARITY_TARGET}, even though ranking quality is strong (89% Top-1, 100% "
-        f"Top-3, MRR 0.944). This is expected behavior for "
+        f"≥{SIMILARITY_TARGET}, even though ranking quality is strong "
+        f"({100*top1_hits/n_cases:.0f}% Top-1, {100*top3_hits/n_cases:.0f}% "
+        f"Top-3, MRR {mrr:.3f}). This is expected behavior for "
         f"`{settings.sbert_model_name}` on short, conversational queries matched "
         "against longer multi-sentence program descriptions — cosine similarity "
         "between a short query and a longer passage rarely reaches 0.75 even for a "

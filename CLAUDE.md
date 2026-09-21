@@ -30,13 +30,25 @@ doesn't mislead the next session the way it misled this one.
   `/recommend` and writes the results into the PHP app's own
   `training_recommendations` table (not a new table — see that repo's
   CLAUDE.md for the FK-type gotcha that cost real debugging time there).
-- `training_programs` table is seeded with **18 rows across 8 categories**
-  (`scripts/seed_training_programs.py`) — Pedagogy, Research, Technology,
-  Assessment, Leadership, Administration, Communication, Student Affairs.
-  These 8 category names are load-bearing: they must match exactly between
-  `app/ml/features.py::CATEGORIES`, the `training_programs.category` column,
-  and `scripts/generate_synthetic_training_data.py::BASE_SCORES`. If you
-  rename/add one, update all three or categories silently score 0.
+- `training_programs` table was originally seeded with 18 rows across 8
+  categories (`scripts/seed_training_programs.py`) and has since grown:
+  **as of 2026-09-21 the live DB holds 325 rows across 23 categories**
+  (Administration, Agriculture, Assessment, Business, Communication,
+  Criminal Justice, Customer Service, Engineering, Fisheries, Food Science
+  and Nutrition, Gender & Development, Hospitality and Tourism, Law,
+  Leadership, Mathematics, Natural Sciences, Nursing and Health, Pedagogy,
+  Physical Education and Sports, Research, Student Affairs, Technical
+  Education, Technology). The service indexes 321 of them at startup
+  (`/health` reports `programs_indexed`) because it only loads
+  `training_type IN ('Workshop','Seminar','Webinar','Conference')` —
+  self-paced Online Courses are never recommended, by design.
+  The category names are load-bearing: they must match exactly between
+  `app/ml/features.py::CATEGORIES` (verified identical to the DB's 23 on
+  2026-09-21), the `training_programs.category` column, and
+  `scripts/generate_synthetic_training_data.py::BASE_SCORES`. If you
+  rename/add one, update all three and retrain (`features.py` documents the
+  exact `SELECT DISTINCT category` query to use) or categories silently
+  score 0.
 - XGBoost is trained: `models_store/xgboost_model.joblib` holds one
   `XGBRegressor` per category, trained on
   `data/processed/synthetic_training_data.csv` (rule-based synthetic
@@ -53,7 +65,11 @@ doesn't mislead the next session the way it misled this one.
   programs by cosine similarity against `desired_skills` + `comments` +
   `training_history` + `specialization`. Validated against 18 hand-curated
   (query, expected program) pairs — one per catalog program — in
-  `reports/sbert_evaluation.md`: 89% Top-1, 100% Top-3, MRR 0.944. Raw
+  `reports/sbert_evaluation.md`: 89% Top-1, 94% Top-3, MRR 0.918 (report
+  regenerated 2026-09-14 against the grown 318-program catalog; on the
+  original 18-program catalog it was 89% / 100% / 0.944 - the one Top-3
+  miss now is a data-protection query where a DPO-compliance program
+  outranks the expected security-awareness one). Raw
   similarity scores (~0.5-0.7) sit well below the paper's Table 11 target
   of â‰¥0.75 despite strong ranking quality — that's normal for this kind
   of query-vs-passage cosine similarity, not a sign of a bad model; see

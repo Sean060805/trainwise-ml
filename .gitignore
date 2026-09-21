@@ -27,6 +27,8 @@ data/processed/
 .DS_Store
 .vscode/
 .idea/
+# Per-machine VS Code workspace files (relative paths differ on every laptop)
+*.code-workspace
 
 # Runtime logs (uvicorn/training stdout+stderr) - regenerate on every run,
 # not project artifacts.

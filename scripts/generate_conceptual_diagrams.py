@@ -331,9 +331,16 @@ def figure2_system_architecture():
 # ---------------------------------------------------------------- Figure 3
 
 def figure3_system_flowchart():
-    fig, ax = plt.subplots(figsize=(14.5, 15.5))
+    # 2026-09-16 revision (round 3) - this used to cover only the training
+    # demand pipeline, but that is one of four real, separate multi-actor
+    # flows this system has. Extended downward (same 3 swimlanes, taller
+    # canvas) with two more full sections - Individual Development Plan
+    # and Evaluation - each set apart with a full-width section divider,
+    # the same technique already used for the Dean lane's Path A/Path B
+    # split, just spanning all three lanes instead of one.
+    fig, ax = plt.subplots(figsize=(14.5, 22.2))
     ax.set_xlim(0, 14.5)
-    ax.set_ylim(0, 22.6)
+    ax.set_ylim(-9.65, 22.6)
     ax.axis("off")
 
     lane_w = 4.15
@@ -341,13 +348,19 @@ def figure3_system_flowchart():
     lanes_x = [0.3, 0.3 + lane_w + gap, 0.3 + 2 * (lane_w + gap)]
     lane_fill = ["#F7F9FC", "#F5FAF7", "#FDF9F1"]
     lane_labels = ["EMPLOYEE", "DEAN / EVALUATOR", "HR ADMIN"]
-    lane_top, lane_bottom = 20.6, 0.5
+    lane_top, lane_bottom = 20.6, -9.25
     for x, fill in zip(lanes_x, lane_fill):
         band(ax, x, x + lane_w, lane_bottom, lane_top, fill)
 
     ax.text(7.25, 22.15, "Figure 3. System Flowchart", ha="center", fontsize=17, color=INK, fontweight="bold")
+    # 2026-09-16 revision - swimlane headers used to be stadium/pill
+    # shapes, the same symbol reserved for Start/End terminals in
+    # standard flowchart notation. A header is a label, not a terminal,
+    # so it is drawn as a plain rectangle here instead - stadiums now
+    # appear nowhere in this diagram except the real START and END.
     for x, lab in zip(lanes_x, lane_labels):
-        pill(ax, x + lane_w / 2 - 1.5, lane_top + 0.15, 3.0, 0.55, lab, fill=INK, fontsize=10.5)
+        box(ax, x + lane_w / 2 - 1.5, lane_top + 0.15, 3.0, 0.55, lab,
+            edge=INK, fill=INK, textcolor=WHITE, fontsize=10.5, weight="bold")
 
     def cx(col):
         return lanes_x[col] + lane_w / 2
@@ -357,6 +370,13 @@ def figure3_system_flowchart():
 
     def term(col, y, h, text, fill=INK, textcolor=WHITE):
         pill(ax, lanes_x[col] + 0.65, y, lane_w - 1.3, h, text, fill=fill, textcolor=textcolor, fontsize=10)
+
+    def section_divider(y, label):
+        """A full-width divider marking a new module boundary (all three
+        lanes), distinct from the thinner, lane-local dashed divider used
+        for a path split within a single lane."""
+        ax.plot([lanes_x[0], lanes_x[2] + lane_w], [y, y], color=INK, linewidth=1.8, zorder=2)
+        ax.text(7.25, y - 0.3, label, ha="center", fontsize=10.5, color=INK, fontweight="bold")
 
     # ---- Employee lane ----
     term(0, 19.3, 0.6, "START")
@@ -378,43 +398,89 @@ def figure3_system_flowchart():
     arrow(ax, (cx(0), 6.2), (cx(0), 5.65))
     lb(0, 4.55, 1.1, "Mark Training Complete\n(unlocked only once proof is on file)")
     arrow(ax, (cx(0), 4.55), (cx(0), 4.0))
-    term(0, 3.4, 0.6, "END", fill=MUTED)
 
     # ---- Dean lane ----
+    # 2026-09-16 revision (round 2) - a reviewer correctly flagged that a
+    # decision diamond fanning out to three exits is not standard
+    # notation; a diamond represents one yes/no question, never a
+    # three-way split. The earlier fix (three labeled exits off one
+    # diamond) solved the "wrong wiring" bug but still broke this rule.
+    # Root cause: "own initiative" was never actually an outcome of "how
+    # did sourcing turn out" in the first place - a dean posting on their
+    # own initiative doesn't depend on receiving a forwarded demand or on
+    # how any particular sourcing attempt went. It is a second, unrelated
+    # entry point into this lane, not a branch of this decision. Modeled
+    # that way below: its own short sequence, set apart with a dashed
+    # divider and its own caption, using the empty space this lane
+    # already had above "Receive Demand Forwarded by HR". The remaining
+    # decision is now a genuine binary yes/no.
+    ax.text(cx(1), 19.75, "PATH A  —  DEAN'S OWN INITIATIVE", ha="center", fontsize=7.6,
+            color=MUTED, fontweight="bold")
+    ax.text(cx(1), 19.32, "(no forwarded demand needed)", ha="center", fontsize=6.6,
+            color=MUTED, style="italic")
+    own_box = lb(1, 18.15, 1.05, "Dean Identifies an\nOpportunity Independently", edge=GOLD, fill=WHITE)
+    new_tag(ax, lanes_x[1] + lane_w - 0.55, 19.05)
+    arrow(ax, (cx(1), 18.15), (cx(1), 17.55))
+    lb(1, 16.45, 1.05, "Post Training\nOpportunity Directly", edge=GOLD, fill=WHITE)
+    ax.text(cx(1), 16.2, "seen instantly by employees", fontsize=6.4, color=MUTED,
+            style="italic", ha="center", va="top")
+    ax.plot([lanes_x[1], lanes_x[1] + lane_w], [14.85, 14.85], color=MUTED, linewidth=1.1,
+            linestyle=(0, (4, 3)), zorder=1)
+    ax.text(cx(1), 14.55, "PATH B  —  RESPONDING TO A FORWARDED DEMAND", ha="center", fontsize=7.6,
+            color=MUTED, fontweight="bold")
+
     lb(1, 12.65, 1.1, "Receive Demand\nForwarded by HR", edge=GOLD, fill=WHITE)
     arrow(ax, (cx(1), 12.65), (cx(1), 12.1))
     lb(1, 11.0, 1.1, "Source a Real Paid\nTraining Provider")
     arrow(ax, (cx(1), 11.0), (cx(1), 10.3))
-    diamond(ax, cx(1), 9.55, 3.1, 1.4, "Sourced a program\nready to report?")
-    arrow(ax, (cx(1) - 1.0, 9.05), (lanes_x[1] + 0.65, 8.55))
-    arrow(ax, (cx(1) + 1.0, 9.05), (lanes_x[1] + lane_w - 0.65, 8.55))
-    line_label(ax, lanes_x[1] + 0.85, 8.9, "yes")
-    line_label(ax, lanes_x[1] + lane_w - 1.05, 8.9, "no")
-    # Two side-by-side boxes with a clean, deliberate gap between them
-    # (each inset 0.25 from its own lane edge, 0.25 gap in between) -
-    # widths recomputed from that budget so they never touch or overlap.
+    # Now a plain binary decision - exactly two exits, each labeled,
+    # routed through an orthogonal trunk and a two-way distribution bar
+    # (the same pattern already used by the HR lane's decision below)
+    # instead of diagonal lines.
+    diamond(ax, cx(1), 9.55, 3.0, 1.4, "Was a provider\nfound?")
     d_bw = (lane_w - 0.5 - 0.25) / 2
     d_box1_x = lanes_x[1] + 0.25
     d_box2_x = d_box1_x + d_bw + 0.25
-    box(ax, d_box1_x, 7.55, d_bw, 1.0, "Report\nTraining Found", edge=GOLD, fill=WHITE, fontsize=7.8)
-    box(ax, d_box2_x, 7.55, d_bw, 1.0, "Post Training\nOpportunity Directly", edge=GOLD, fill=WHITE, fontsize=7.3)
-    new_tag(ax, cx(1), 6.95)
-    ax.text(d_box2_x + d_bw / 2, 7.35, "seen instantly by\nemployees", fontsize=6.3, color=MUTED,
-            style="italic", ha="center", va="top", linespacing=1.2)
+    d_box1_cx = d_box1_x + d_bw / 2
+    d_box2_cx = d_box2_x + d_bw / 2
+    d_trunk_y = 8.68
+    ax.plot([cx(1), cx(1)], [8.85, d_trunk_y], color=INK, linewidth=1.5, zorder=1, solid_capstyle="round")
+    ax.plot([d_box1_cx, d_box2_cx], [d_trunk_y, d_trunk_y], color=INK, linewidth=1.5, zorder=1, solid_capstyle="round")
+    arrow(ax, (d_box1_cx, d_trunk_y), (d_box1_cx, 8.55))
+    arrow(ax, (d_box2_cx, d_trunk_y), (d_box2_cx, 8.55))
+    line_label(ax, d_box1_cx, d_trunk_y, "found it", fontsize=6.6)
+    line_label(ax, d_box2_cx, d_trunk_y, "not found", fontsize=6.6)
+    box(ax, d_box1_x, 7.55, d_bw, 1.0, "Report\nTraining Found", edge=GOLD, fill=WHITE, fontsize=8.2)
+    box(ax, d_box2_x, 7.55, d_bw, 1.0, "Report No\nTraining Found", edge=GOLD, fill=WHITE, fontsize=8.2)
+    new_tag(ax, d_box2_x + d_bw - 0.35, 8.4)
+    elbow(ax, (d_box2_cx, 7.55), (cx(1), 6.78), color=GOLD, first="v")
+    # 2026-09-16 - was a stadium/pill shape, the symbol reserved for the
+    # diagram's actual Start/End terminals. This is a process outcome
+    # (closing one request), not a new terminal for the whole diagram, so
+    # it is a rectangle like every other process step, just filled dark
+    # to still read as "this branch ends here."
+    box(ax, cx(1) - 1.6, 6.05, 3.2, 0.72, "Request Closed:\nHR & Employees Notified",
+        edge=MUTED, fill=MUTED, textcolor=WHITE, fontsize=6.6)
 
     # ---- HR lane ----
     lb(2, 15.95, 1.1, "Review Pooled\nTraining Demand", edge=GOLD, fill=WHITE)
     arrow(ax, (cx(2), 15.95), (cx(2), 15.4))
     diamond(ax, cx(2), 14.65, 3.3, 1.4, "A dean's college can\nsource this program?")
-    arrow(ax, (cx(2) - 1.05, 14.15), (lanes_x[2] + 0.65, 13.6))
-    arrow(ax, (cx(2) + 1.05, 14.15), (lanes_x[2] + lane_w - 0.65, 13.6))
-    line_label(ax, lanes_x[2] + 0.9, 13.95, "yes")
-    line_label(ax, lanes_x[2] + lane_w - 1.1, 13.95, "no")
     h_bw = (lane_w - 0.5 - 0.25) / 2
     h_box1_x = lanes_x[2] + 0.25
     h_box2_x = h_box1_x + h_bw + 0.25
     h_box1_cx = h_box1_x + h_bw / 2
     h_box2_cx = h_box2_x + h_bw / 2
+    # 2026-09-16 revision - same fix as the dean lane's decision below:
+    # a single orthogonal trunk and distribution bar instead of two
+    # diagonal lines, with "yes"/"no" sitting on the bar itself.
+    h_trunk_y = 13.78
+    ax.plot([cx(2), cx(2)], [13.95, h_trunk_y], color=INK, linewidth=1.5, zorder=1, solid_capstyle="round")
+    ax.plot([h_box1_cx, h_box2_cx], [h_trunk_y, h_trunk_y], color=INK, linewidth=1.5, zorder=1, solid_capstyle="round")
+    arrow(ax, (h_box1_cx, h_trunk_y), (h_box1_cx, 13.6))
+    arrow(ax, (h_box2_cx, h_trunk_y), (h_box2_cx, 13.6))
+    line_label(ax, h_box1_cx, h_trunk_y, "yes", fontsize=7.5)
+    line_label(ax, h_box2_cx, h_trunk_y, "no", fontsize=7.5)
     box(ax, h_box1_x, 12.6, h_bw, 1.0, "Forward to\nCollege Dean", edge=GOLD, fill=WHITE, fontsize=7.8)
     box(ax, h_box2_x, 12.6, h_bw, 1.0, "Source Training\nDirectly (HR)", edge=GOLD, fill=WHITE, fontsize=7.8)
     new_tag(ax, cx(2), 12.0)
@@ -438,8 +504,22 @@ def figure3_system_flowchart():
     gapB_x = lanes_x[1] + lane_w + gap / 2   # gap between Dean | HR
 
     # 1. Employee "Accept Recommendation" -> HR "Review Pooled Demand"
-    #    (Dean lane is empty above y=13.75, so the crossing happens up there)
-    route(ax, (lanes_x[0] + lane_w, 13.2), (lanes_x[2], 16.5), via_x=gapA_x)
+    #    The Dean lane's upper area used to be empty, which is why this
+    #    used to cross at a fixed height through it - it now holds the
+    #    Own-Initiative path added in this revision, so the crossing is
+    #    routed above all of that content instead (through the clear
+    #    strip just under the lane header), then down through the Dean|HR
+    #    gap into the target box, rather than straight across at y=16.5.
+    cross_y = 20.05
+    ax.plot([lanes_x[0] + lane_w, gapA_x], [13.2, 13.2], color=GOLD, linewidth=1.6, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    ax.plot([gapA_x, gapA_x], [13.2, cross_y], color=GOLD, linewidth=1.6, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    ax.plot([gapA_x, gapB_x], [cross_y, cross_y], color=GOLD, linewidth=1.6, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    ax.plot([gapB_x, gapB_x], [cross_y, 16.5], color=GOLD, linewidth=1.6, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    arrow(ax, (gapB_x, 16.5), (lanes_x[2], 16.5), color=GOLD)
 
     # 2. HR "Forward to College Dean" -> Dean "Receive Demand Forwarded"
     arrow(ax, (lanes_x[2], 13.15), (lanes_x[1] + lane_w, 13.15), color=GOLD)
@@ -451,18 +531,78 @@ def figure3_system_flowchart():
     route(ax, (d_box1_x + d_bw, 8.05), (lanes_x[2], 10.95), via_x=gapB_x)
 
     # 4. HR "Confirm Participants" -> Employee "Notified: Training Available"
-    #    Routed below the Dean lane's boxes entirely (y=7.0, clear of both
-    #    "Report Training Found"/"Post Training Opportunity Directly" AND
-    #    the decision diamond's branch lines above them) rather than
-    #    through the y=8.7 gap, which used to cut across those lines.
-    fb_y = 6.5
+    #    Routed below the Dean lane's boxes entirely, clear of both the
+    #    three sourcing-outcome boxes AND the "Request Closed" pill added
+    #    below them in this revision (that pill sits right where this used
+    #    to cross at y=6.5, which visually looked like a wrong connection
+    #    between the two - lowered to stay clear of it).
+    fb_y = 5.15
     ax.plot([lanes_x[2], lanes_x[2]], [7.65, fb_y], color=GOLD, linewidth=1.6, zorder=1,
             solid_capstyle="round", solid_joinstyle="round")
     ax.plot([lanes_x[2], lanes_x[0] + lane_w], [fb_y, fb_y], color=GOLD, linewidth=1.6, zorder=1,
             solid_capstyle="round", solid_joinstyle="round")
     arrow(ax, (lanes_x[0] + lane_w, fb_y), (lanes_x[0] + lane_w, 7.85), color=GOLD)
 
-    legend_swatches(ax, 0.3, 0.65)
+    # ================================================================
+    # SECTION 3 - Individual Development Plan (IDP)
+    # ================================================================
+    # Pre-existing system feature, not new/changed in this revision -
+    # drawn in the same royal/ink "existing component" style as Sections
+    # 1-2's non-gold steps, no GOLD edges or NEW tags here.
+    section_divider(3.5, "SECTION 3  —  INDIVIDUAL DEVELOPMENT PLAN (IDP)")
+
+    lb(0, 1.85, 1.05, "Draft IDP\n(Goals, Purpose, Timeline)")
+    arrow(ax, (cx(0), 1.85), (cx(0), 1.30))
+    lb(0, 0.25, 1.05, "Submit to Dean\nfor Co-Signature")
+    arrow(ax, (lanes_x[0] + lane_w, 0.775), (lanes_x[1], 0.775))
+
+    lb(1, 0.25, 1.05, "Review IDP,\nAdd Co-Signature")
+    arrow(ax, (cx(1), 0.25), (cx(1), -0.30))
+    lb(1, -1.35, 1.05, "Forward to HR")
+    arrow(ax, (lanes_x[1] + lane_w, -0.825), (lanes_x[2], -0.825))
+
+    lb(2, -1.35, 1.05, "Add Final Signature\n(IDP Completed)")
+
+    # Return hand-off to the employee, routed below Section 3's Dean-lane
+    # content entirely (same "drop, cross, rise" technique as connector 4
+    # above) rather than straight across at a fixed height.
+    idp_safe_y = -1.90
+    ax.plot([lanes_x[2], lanes_x[2]], [-1.35, idp_safe_y], color=INK, linewidth=1.5, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    ax.plot([lanes_x[2], lanes_x[0] + lane_w], [idp_safe_y, idp_safe_y], color=INK, linewidth=1.5, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    arrow(ax, (lanes_x[0] + lane_w, idp_safe_y), (lanes_x[0] + lane_w, -1.35))
+    lb(0, -1.35, 1.05, "Notified: IDP\nFinalized")
+
+    # ================================================================
+    # SECTION 4 - Evaluation (dean-rated faculty/staff performance -
+    # a separate feature from training completion; unrelated to proof
+    # of completion or the training-demand pipeline above)
+    # ================================================================
+    section_divider(-2.40, "SECTION 4  —  EVALUATION")
+    ax.text(cx(1), -2.95, "(faculty/staff not yet evaluated)", ha="center", fontsize=6.6,
+            color=MUTED, style="italic")
+
+    lb(1, -4.25, 1.05, "Evaluate Employee\n(Performance Form)")
+    arrow(ax, (cx(1), -4.25), (cx(1), -4.80))
+    lb(1, -5.85, 1.05, "Send to HR Admin")
+    arrow(ax, (lanes_x[1] + lane_w, -5.325), (lanes_x[2], -5.325))
+
+    lb(2, -5.85, 1.05, "Review Evaluation")
+    arrow(ax, (cx(2), -5.85), (cx(2), -6.40))
+    lb(2, -7.45, 1.05, "Send to Employee")
+
+    eval_safe_y = -8.00
+    ax.plot([lanes_x[2], lanes_x[2]], [-7.45, eval_safe_y], color=INK, linewidth=1.5, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    ax.plot([lanes_x[2], lanes_x[0] + lane_w], [eval_safe_y, eval_safe_y], color=INK, linewidth=1.5, zorder=1,
+            solid_capstyle="round", solid_joinstyle="round")
+    arrow(ax, (lanes_x[0] + lane_w, eval_safe_y), (lanes_x[0] + lane_w, -7.45))
+    lb(0, -7.45, 1.05, "Notified: Evaluation\nSent")
+    arrow(ax, (cx(0), -7.45), (cx(0), -8.25))
+    term(0, -8.85, 0.6, "END", fill=MUTED)
+
+    legend_swatches(ax, 0.3, -9.10)
 
     fig.tight_layout()
     out = os.path.join(FIG_DIR, "fig3_system_flowchart.png")
@@ -578,26 +718,32 @@ def figure4a_use_case_diagram_employee():
 
 
 def figure4b_use_case_diagram_dean_hr():
-    fig, ax = plt.subplots(figsize=(13.2, 14.2))
+    # 2026-09-16 revision - added one use case to each actor's column
+    # (Report No Training Found / its HR self-report equivalent), so the
+    # figure grew taller than the previous revision. Height and the
+    # boundary box scaled up together rather than shrinking the step
+    # between existing use cases, so nothing that already fit comfortably
+    # gets tighter or harder to read.
+    fig, ax = plt.subplots(figsize=(13.2, 15.6))
     ax.set_xlim(0, 15.4)
-    ax.set_ylim(0, 16.3)
+    ax.set_ylim(0, 17.9)
     ax.axis("off")
 
-    ax.text(7.7, 15.8, "Figure 4b. Use Case Diagram - Dean and HR Admin", ha="center",
+    ax.text(7.7, 17.4, "Figure 4b. Use Case Diagram - Dean and HR Admin", ha="center",
             fontsize=17, color=INK, fontweight="bold")
 
-    uc_boundary(ax, 1.9, 0.6, 11.6, 14.3)
+    uc_boundary(ax, 1.9, 0.6, 11.6, 16.1)
 
     step = 1.15
     sub_gap = 0.3
-    y_top = 14.0
+    y_top = 15.8
 
     # Dean's column sits on the LEFT side of the shared boundary, with
     # its actor further left still - this actor never needs a line that
     # reaches HR's side, so the two never cross regardless of how many
     # use cases either one has.
     dean_col_x = 5.1
-    dean_y = stacked_ys(y_top, 6, step, {3: sub_gap})
+    dean_y = stacked_ys(y_top, 7, step, {3: sub_gap})
     dean_actor_y = (dean_y[0] + dean_y[-1]) / 2
     stick_actor(ax, 0.85, dean_actor_y, "Dean /\nEvaluator")
     dean = [
@@ -606,14 +752,15 @@ def figure4b_use_case_diagram_dean_hr():
         usecase(ax, dean_col_x, dean_y[2], "Evaluate Faculty\nPerformance", fontsize=8.7),
         usecase(ax, dean_col_x, dean_y[3], "Review Training Demand\nForwarded by HR", new=True, fontsize=8.4),
         usecase(ax, dean_col_x, dean_y[4], "Report Training\nFound", new=True, fontsize=8.7),
-        usecase(ax, dean_col_x, dean_y[5], "Post Training\nOpportunity Directly", new=True, fontsize=8.2),
+        usecase(ax, dean_col_x, dean_y[5], "Report No\nTraining Found", new=True, fontsize=8.7),
+        usecase(ax, dean_col_x, dean_y[6], "Post Training\nOpportunity Directly", new=True, fontsize=8.2),
     ]
     uc_fan(ax, (0.85, dean_actor_y), dean, FOREST)
 
     # HR's column mirrors this on the RIGHT side, actor further right,
     # fan lines pointing left into its own column only.
     hr_col_x = 10.2
-    hr_y = stacked_ys(y_top, 11, step, {3: sub_gap, 6: sub_gap, 8: sub_gap})
+    hr_y = stacked_ys(y_top, 12, step, {3: sub_gap, 6: sub_gap, 8: sub_gap})
     hr_actor_y = (hr_y[0] + hr_y[-1]) / 2
     stick_actor(ax, 14.55, hr_actor_y, "HR Admin")
     hr = [
@@ -627,7 +774,8 @@ def figure4b_use_case_diagram_dean_hr():
         usecase(ax, hr_col_x, hr_y[7], "View Audit Log", fontsize=8.7),
         usecase(ax, hr_col_x, hr_y[8], "Review Training\nDemand", new=True, fontsize=8.7),
         usecase(ax, hr_col_x, hr_y[9], "Forward to Dean /\nSource Directly", new=True, fontsize=8.4),
-        usecase(ax, hr_col_x, hr_y[10], "Review AI-Assisted\nShortlist", new=True, fontsize=8.4),
+        usecase(ax, hr_col_x, hr_y[10], "Report No Training\nFound (Direct)", new=True, fontsize=8.0),
+        usecase(ax, hr_col_x, hr_y[11], "Review AI-Assisted\nShortlist", new=True, fontsize=8.4),
     ]
     uc_fan(ax, (14.55, hr_actor_y), hr, GOLD, from_right=True)
 

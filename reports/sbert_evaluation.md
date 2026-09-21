@@ -1,8 +1,8 @@
 # SBERT Text-Similarity — Evaluation Report
 
-Generated: 2026-08-19T11:13:02.966136+00:00
+Generated: 2026-09-14T06:31:47.580444+00:00
 
-Catalog size: 18 training programs.
+Catalog size: 318 training programs.
 
 ## Methodology
 
@@ -13,10 +13,10 @@ No real expert-labeled relevance dataset exists yet (same situation as the XGBoo
 ## Summary
 
 - **Top-1 accuracy:** 16/18 (89%) — expected program was the #1 result
-- **Top-3 accuracy:** 18/18 (100%) — expected program was in the top 3
-- **Mean Reciprocal Rank:** 0.944
-- **Average similarity score of the expected program:** 0.611
-- **Average similarity score of the actual #1 result:** 0.617
+- **Top-3 accuracy:** 17/18 (94%) — expected program was in the top 3
+- **Mean Reciprocal Rank:** 0.918
+- **Average similarity score of the expected program:** 0.609
+- **Average similarity score of the actual #1 result:** 0.622
 - **Queries whose #1 result met the paper's ≥0.75 similarity target:** 1/18
 
 ## Per-query results
@@ -29,10 +29,10 @@ No real expert-labeled relevance dataset exists yet (same situation as the XGBoo
 | I want to publish my study in an academic journal but don't know how to structure the paper | ✓ Research Publication and Academic Writing Skills | 1 | 0.542 | Research Publication and Academic Writing Skills | 0.542 |
 | How do I use SPSS to analyze survey responses from my study? | ✓ Research Methods and Statistical Analysis | 1 | 0.692 | Research Methods and Statistical Analysis | 0.692 |
 | Looking for funding opportunities and grants to support my research project | ✓ Grant Writing and Research Funding | 1 | 0.695 | Grant Writing and Research Funding | 0.695 |
-| I want to learn how to use Google Classroom and simple online tools for hybrid teaching | ✓ Digital Literacy and Educational Technology | 1 | 0.562 | Digital Literacy and Educational Technology | 0.562 |
+| I want to learn how to use Google Classroom and simple online tools for hybrid teaching | ✓ Digital Literacy and Educational Technology | 1 | 0.558 | Digital Literacy and Educational Technology | 0.558 |
 | Need training on building spreadsheets and dashboards to track enrollment trends | ✓ Data Analytics and Dashboards for Decision-Making | 1 | 0.738 | Data Analytics and Dashboards for Decision-Making | 0.738 |
-| I'd like to learn basic coding to automate repetitive spreadsheet tasks in the office | ✓ Introduction to Programming for Non-IT Staff | 1 | 0.739 | Introduction to Programming for Non-IT Staff | 0.739 |
-| I want to improve my skills in data protection and online security | △ Cybersecurity Awareness for University Staff | 2 | 0.263 | Data Analytics and Dashboards for Decision-Making | 0.291 |
+| I'd like to learn basic coding to automate repetitive spreadsheet tasks in the office | ✓ Introduction to Programming for Non-IT Staff | 1 | 0.705 | Introduction to Programming for Non-IT Staff | 0.705 |
+| I want to improve my skills in data protection and online security | ✗ Cybersecurity Awareness for University Staff | 31 | 0.263 | Data Privacy Officer (DPO) Compliance Program Management under RA 10173 | 0.428 |
 | I want to get better at grading student essays fairly with clear rubrics | △ Student Assessment and Evaluation Techniques | 2 | 0.488 | Test Construction and Item Analysis | 0.569 |
 | How do I write better multiple choice exam questions that aren't too easy or too hard? | ✓ Test Construction and Item Analysis | 1 | 0.601 | Test Construction and Item Analysis | 0.601 |
 | I'm a new department chair and need help managing my team and resolving conflicts | ✓ Leadership and People Management for Educators | 1 | 0.527 | Leadership and People Management for Educators | 0.527 |
@@ -44,6 +44,6 @@ No real expert-labeled relevance dataset exists yet (same situation as the XGBoo
 
 ## Interpretation
 
-Average similarity scores here (expected: 0.611, actual top-1: 0.617) are well below the paper's Table 11 target of ≥0.75, even though ranking quality is strong (89% Top-1, 100% Top-3, MRR 0.944). This is expected behavior for `multi-qa-MiniLM-L6-cos-v1` on short, conversational queries matched against longer multi-sentence program descriptions — cosine similarity between a short query and a longer passage rarely reaches 0.75 even for a correct match, regardless of model quality (this is specifically an asymmetric query-vs-passage model variant, well-suited to this exact task, not a weak general-purpose one). **Recommend updating Table 11's similarity target to reflect realistic scores for this model** (e.g. relative ranking / Top-3 accuracy, rather than an absolute cosine similarity threshold), or re-deriving the 0.75 figure from this evaluation's own observed score distribution instead of an unstated external benchmark.
+Average similarity scores here (expected: 0.609, actual top-1: 0.622) are well below the paper's Table 11 target of ≥0.75, even though ranking quality is strong (89% Top-1, 94% Top-3, MRR 0.918). This is expected behavior for `multi-qa-MiniLM-L6-cos-v1` on short, conversational queries matched against longer multi-sentence program descriptions — cosine similarity between a short query and a longer passage rarely reaches 0.75 even for a correct match, regardless of model quality (this is specifically an asymmetric query-vs-passage model variant, well-suited to this exact task, not a weak general-purpose one). **Recommend updating Table 11's similarity target to reflect realistic scores for this model** (e.g. relative ranking / Top-3 accuracy, rather than an absolute cosine similarity threshold), or re-deriving the 0.75 figure from this evaluation's own observed score distribution instead of an unstated external benchmark.
 
 **One genuine miss worth a second look:** the "data protection and online security" query — the paper's own worked example (p.58) for why SBERT beats keyword matching — ranked the expected "Cybersecurity Awareness" program 2nd (score 0.263, notably lower than every other case) instead of 1st. It still cleared Top-3, but the low absolute score suggests that program's description could be reworded toward the vocabulary employees actually use for this need ("security", "privacy", "data protection") rather than leaning on the term "cybersecurity" alone.
